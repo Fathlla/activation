@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولّد مفاتيح التفعيل - النظام المدرسي</title>
+    <!-- مكتبة التشفير المشفرة CryptoJS لتوليد نفس HMAC-SHA256 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #090d16;
+            --card-bg: #131b2e;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --success: #10b981;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        h2 {
+            text-align: center;
+            color: #38bdf8;
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background-color: #090d16;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #38bdf8;
+            font-family: 'Consolas', monospace;
+            font-size: 16px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+        .result-box {
+            background-color: #090d16;
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            display: none;
+        }
+        .result-box h3 {
+            margin: 0 0 8px 0;
+            color: var(--success);
+            font-size: 14px;
+        }
+        .key-output {
+            font-family: 'Consolas', monospace;
+            font-size: 18px;
+            color: var(--success);
+            word-break: break-all;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .copy-btn {
+            background-color: var(--success);
+            padding: 8px;
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+        .copy-btn:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>مولّد مفاتيح التفعيل ⚡</h2>
+    <p class="subtitle">أنشئ مفتاح التفعيل لعميلك مباشرة من هاتفك المحمول</p>
+
+    <label for="hwidInput">أدخل بصمة الجهاز (HWID):</label>
+    <input type="text" id="hwidInput" placeholder="مثال: 8311-90C7-B9CA-A76E">
+
+    <button onclick="generateKey()">توليد مفتاح التفعيل 🔑</button>
+
+    <div class="result-box" id="resultBox">
+        <h3>مفتاح التفعيل الناتج:</h3>
+        <div class="key-output" id="keyOutput">---</div>
+        <button class="copy-btn" onclick="copyKey()">نسخ المفتاح للحافظة 📋</button>
+    </div>
+</div>
+
+<script>
+    // يجب أن يكون المفتاح السري مطابَقاً تماماً لما هو موجود في البرنامج الرئيسي
+    const SECRET_SALT = "SCHOOL_PRO_SECRET_KEY_2027_SECURE";
+
+    function generateKey() {
+        let hwid = document.getElementById("hwidInput").value.trim().toUpperCase();
+        if (!hwid) {
+            alert("يرجى إدخال بصمة الجهاز أولاً!");
+            return;
+        }
+
+        // حساب HMAC-SHA256 بنفس الطريقة البرمجية
+        let hash = CryptoJS.HmacSHA256(hwid, SECRET_SALT);
+        let signature = hash.toString(CryptoJS.enc.Hex).toUpperCase();
+
+        // تنسيق المفتاح على شكل مجموعات من 5 أحرف يفصلها شرطة
+        let chunks = [];
+        for (let i = 0; i < 20; i += 5) {
+            chunks.push(signature.substr(i, 5));
+        }
+        let finalKey = chunks.join("-");
+
+        // عرض النتيجة
+        document.getElementById("keyOutput").innerText = finalKey;
+        document.getElementById("resultBox").style.display = "block";
+    }
+
+    function copyKey() {
+        let keyText = document.getElementById("keyOutput").innerText;
+        navigator.clipboard.writeText(keyText).then(() => {
+            alert("تم نسخ مفتاح التفعيل بنجاح! يمكنك إرساله للعميل عبر واتساب.");
+        });
+    }
+</script>
+
+</body>
+</html>
